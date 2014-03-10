@@ -50,6 +50,7 @@
     <link rel="stylesheet" href="./package/lungo/lungo.icon.css">
     <!-- App Stylesheet -->
     <link rel="stylesheet" href="static/stylesheets/app.css">
+    <link rel="stylesheet" href="static/stylesheets/promoshop.css">
 </head>
 
 <body>
@@ -64,18 +65,8 @@
             </nav>
         </header>
 
-        <article id="main-article" class="list indenteds scroll">
-            <ul>
-                <li class="text small">
-                    Promoshop, la aplicación de las ofertas al instante
-                </li>
-                <li>
-                    <strong class="text bold">Útil</strong>
-                    <span class="text tiny">
-                        Promoshop es un nuevo concepto de "ir de compras"
-                    </span>
-                </li>
-            </ul>
+        <article id="main-article" class="scroll">
+            <div id="map"></div>
         </article>
     </section>
 
@@ -85,8 +76,8 @@
     <!-- LungoJS - Sandbox App -->
     <script>
         Lungo.init({
-            name: 'Kitchen Sink',
-            version: '2.1.0222',
+            name: 'PromoShop',
+            version: '0.1',
             resources: [
                 'static/asides/features.html',
                 'static/asides/right.html',
@@ -94,6 +85,8 @@
             history: false
         });
     </script>
+    <script type="text/javascript" src="./package/google/googlemapapi.js"></script>
+    <script src="./components/gmaps/gmaps.js"></script>
     <script src="static/javascripts/app.js"></script>
 </body>
 </html>

@@ -6,4 +6,11 @@
 /home/fernando/git/promcc/platforms/android/ant-build/classes/com/phonegap/helloworld/HelloWorld.class \
 /home/fernando/git/promcc/platforms/android/ant-build/classes/com/phonegap/helloworld/R.class \
 /home/fernando/git/promcc/platforms/android/ant-build/classes/com/phonegap/helloworld/R$string.class \
+/home/fernando/git/promcc/platforms/android/ant-build/classes/es/wion/promoshop/BuildConfig.class \
+/home/fernando/git/promcc/platforms/android/ant-build/classes/es/wion/promoshop/R$xml.class \
+/home/fernando/git/promcc/platforms/android/ant-build/classes/es/wion/promoshop/R$attr.class \
+/home/fernando/git/promcc/platforms/android/ant-build/classes/es/wion/promoshop/R$drawable.class \
+/home/fernando/git/promcc/platforms/android/ant-build/classes/es/wion/promoshop/PromoShop.class \
+/home/fernando/git/promcc/platforms/android/ant-build/classes/es/wion/promoshop/R.class \
+/home/fernando/git/promcc/platforms/android/ant-build/classes/es/wion/promoshop/R$string.class \
 /home/fernando/git/promcc/platforms/android/ant-build/dexedLibs/classes-75863403c6918491309090c3045d9740.jar \

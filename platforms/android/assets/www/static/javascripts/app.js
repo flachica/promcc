@@ -1,4 +1,44 @@
+var defaultLocation = {};
+defaultLocation.lat = 40.43794472516468;
+defaultLocation.lon = -3.6795366500000455;
+
 var App = (function(lng, undefined) {
+    map = {};
+    
+    geoposOptions = { timeout: 10000, enableHighAccuracy: true };
+    
+    getCurrentPositionSuccess = function (position) {
+        App.map.addMarker({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+          title: 'Mi ubicación',
+          click: function(e) {
+            alert('You clicked in this marker');
+          }
+        });
+        App.map.setCenter(position.coords.latitude, position.coords.longitude);
+    };
+
+    getCurrentPositionError = function (error) {
+        alert('Geolocation failed: '+error.message);
+    };
+
+    initializeMap = function () {
+        App.map = new GMaps({
+            el: '#map',
+            lat: defaultLocation.lat,
+            lng: defaultLocation.lon,
+            zoomControl : true,
+            zoomControlOpt: {
+                style : 'SMALL',
+                position: 'TOP_LEFT'
+            },
+            panControl : false,
+            streetViewControl : false,
+            mapTypeControl: false,
+            overviewMapControl: false
+        });
+    };
 
     sectionTrigger = function(event) {
         event.stopPropagation();
@@ -28,7 +68,11 @@ var App = (function(lng, undefined) {
     return {
         sectionTrigger: sectionTrigger,
         articleTrigger: articleTrigger,
-        environment: environment
+        environment: environment,
+        getCurrentPositionSuccess: getCurrentPositionSuccess,
+        getCurrentPositionError: getCurrentPositionError,
+        geoposOptions: geoposOptions,
+        initializeMap: initializeMap
     };
 
 })(Lungo);
@@ -140,34 +184,9 @@ Lungo.Events.init({
 });
 
 Lungo.ready(function() {
-
-    // Lungo.Aside.show();
-    // Lungo.Router.section("notification");
-
-    // Lungo.Notification.show();
-    // Lungo.Notification.show("home", "Please wait...");
-    // Lungo.Notification.show("magic");
-
-    // Lungo.Notification.show("Please wait", "user", 2, function(){ alert(1); });
-
-    // Lungo.Notification.error('Lorem ipsum dolor sit amet', "    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Reiciendis veritatis similique sed qui doloribus inventore doloremque temporibus ab totam...", 'remove');
-    // Lungo.Notification.success('Lorem ipsum dolor sit amet', "    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Reiciendis veritatis similique sed qui doloribus inventore doloremque temporibus ab totam...", 'ok');
-    // Lungo.Notification.confirm({
-    //     icon: 'user',
-    //     title: 'Lorem ipsum dolor sit amet, consectetur adipisicing.',
-    //     description: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nemo amet nulla dolorum hic eum debitis dolorem expedita? Commodi molestiae tempora totam explicabo sed deserunt cum iusto eos perspiciatis ea in.',
-    //     accept: {
-    //         icon: 'checkmark',
-    //         label: 'Accept',
-    //         callback: function(){ alert("Yes!"); }
-    //     },
-    //     cancel: {
-    //         icon: 'close',
-    //         label: 'Cancel',
-    //         callback: function(){ alert("No!"); }
-    //     }
-    // });
-    // Lungo.Notification.html("<h1 class='title'>Title</h1><article>aslkdkals</article><a href='#' class='button large anchor' >Seleccionar</a>", "Cancelar");
-    // Lungo.Notification.push("Lorem ipsum dolor sit amet", "home");
-
+    App.initializeMap();
+    navigator.geolocation.getCurrentPosition(App.getCurrentPositionSuccess, 
+                                             App.getCurrentPositionError,
+                                             App.geoposOptions
+                                            );
 });

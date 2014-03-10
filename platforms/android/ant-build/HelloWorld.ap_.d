@@ -89,9 +89,11 @@
 /home/fernando/git/promcc/platforms/android/assets/www/res/icon/bada/icon-128.png \
 /home/fernando/git/promcc/platforms/android/assets/www/res/icon/webos/icon-64.png \
 /home/fernando/git/promcc/platforms/android/assets/www/components/quojs \
+/home/fernando/git/promcc/platforms/android/assets/www/components/gmaps \
 /home/fernando/git/promcc/platforms/android/assets/www/components/quojs/quo.js \
 /home/fernando/git/promcc/platforms/android/assets/www/components/quojs/component.json \
 /home/fernando/git/promcc/platforms/android/assets/www/components/quojs/quo.debug.js \
+/home/fernando/git/promcc/platforms/android/assets/www/components/gmaps/gmaps.js \
 /home/fernando/git/promcc/platforms/android/assets/www/static/articles \
 /home/fernando/git/promcc/platforms/android/assets/www/static/asides \
 /home/fernando/git/promcc/platforms/android/assets/www/static/javascripts \
@@ -116,6 +118,7 @@
 /home/fernando/git/promcc/platforms/android/assets/www/static/asides/features.html \
 /home/fernando/git/promcc/platforms/android/assets/www/static/javascripts/app.js \
 /home/fernando/git/promcc/platforms/android/assets/www/static/images/logo.png \
+/home/fernando/git/promcc/platforms/android/assets/www/static/stylesheets/promoshop.css \
 /home/fernando/git/promcc/platforms/android/assets/www/static/stylesheets/app.css \
 /home/fernando/git/promcc/platforms/android/assets/www/static/sections/pull.html \
 /home/fernando/git/promcc/platforms/android/assets/www/static/sections/form.html \
@@ -134,7 +137,9 @@
 /home/fernando/git/promcc/platforms/android/assets/www/spec/lib/jasmine-1.2.0/jasmine.css \
 /home/fernando/git/promcc/platforms/android/assets/www/spec/lib/jasmine-1.2.0/jasmine.js \
 /home/fernando/git/promcc/platforms/android/assets/www/spec/lib/jasmine-1.2.0/jasmine-html.js \
+/home/fernando/git/promcc/platforms/android/assets/www/package/google \
 /home/fernando/git/promcc/platforms/android/assets/www/package/lungo \
+/home/fernando/git/promcc/platforms/android/assets/www/package/google/googlemapapi.js \
 /home/fernando/git/promcc/platforms/android/assets/www/package/lungo/lungo.js \
 /home/fernando/git/promcc/platforms/android/assets/www/package/lungo/lungo.css \
 /home/fernando/git/promcc/platforms/android/assets/www/package/lungo/lungo.theme.css \
