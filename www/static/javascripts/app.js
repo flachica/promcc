@@ -4,30 +4,44 @@ defaultLocation.lon = -3.6795366500000455;
 
 var App = (function(lng, undefined) {
     map = {};
+    currentPosition = {};
     
     geoposOptions = { timeout: 10000, enableHighAccuracy: true };
     
+    //prod
+    serverInfo = {urlList: 'http://app.hubservice.es/promoshop/promccweb/index.php/api/list'};    
+    
+    //debug
+    //serverInfo = {urlList: 'http://localhost/promccweb/index.php/api/list'};    
+    
     getCurrentPositionSuccess = function (position) {
+        App.initializeMap(position.coords.latitude, position.coords.longitude);
+        App.currentPosition.lat = position.coords.latitude;
+        App.currentPosition.lon = position.coords.longitude;
+
         App.map.addMarker({
           lat: position.coords.latitude,
           lng: position.coords.longitude,
-          title: 'Mi ubicación',
-          click: function(e) {
-            alert('You clicked in this marker');
-          }
+          title: 'Mi ubicación'
         });
         App.map.setCenter(position.coords.latitude, position.coords.longitude);
+        App.getCentrosComerciales();
     };
 
     getCurrentPositionError = function (error) {
-        alert('Geolocation failed: '+error.message);
+        App.geoposOptions.enableHighAccuracy = false;
+        App.geoposOptions.timeout = 5000;
+        navigator.geolocation.getCurrentPosition(App.getCurrentPositionSuccess, 
+                                             function(error){alert('Geolocation failed: '+error.message)},
+                                             App.geoposOptions
+                                            );
     };
 
-    initializeMap = function () {
+    initializeMap = function (pLat, pLon) {
         App.map = new GMaps({
             el: '#map',
-            lat: defaultLocation.lat,
-            lng: defaultLocation.lon,
+            lat: pLat,
+            lng: pLon,
             zoomControl : true,
             zoomControlOpt: {
                 style : 'SMALL',
@@ -38,6 +52,23 @@ var App = (function(lng, undefined) {
             mapTypeControl: false,
             overviewMapControl: false
         });
+
+        App.currentPosition = new Object();
+    };
+
+    pintaCentrosComerciales = function(result) {
+        for (var i = 0; i < result.length; i++) {
+            App.map.addMarker({
+              lat: result[i].latitud,
+              lng: result[i].longitud,
+              title: result[i].nombre
+            });
+        }
+    };
+
+    getCentrosComerciales = function () {
+        params = {model: 'Centrocomercial'};        
+        Lungo.Service.get(App.serverInfo.urlList, params, pintaCentrosComerciales, "json");
     };
 
     sectionTrigger = function(event) {
@@ -72,7 +103,9 @@ var App = (function(lng, undefined) {
         getCurrentPositionSuccess: getCurrentPositionSuccess,
         getCurrentPositionError: getCurrentPositionError,
         geoposOptions: geoposOptions,
-        initializeMap: initializeMap
+        initializeMap: initializeMap,
+        serverInfo: serverInfo,
+        getCentrosComerciales: getCentrosComerciales
     };
 
 })(Lungo);
@@ -184,7 +217,17 @@ Lungo.Events.init({
 });
 
 Lungo.ready(function() {
-    App.initializeMap();
+    Lungo.Element.loading("#map", 1);
+
+    Lungo.Service.Settings.async = true;
+    Lungo.Service.Settings.error = function(type, xhr){
+        console.log("Hubo un error al acceder al servidor, type: " + type + " xhr: " + xhr);
+        Lungo.Notification.hide();
+    };
+    
+    Lungo.Service.Settings.crossDomain = true;
+    Lungo.Service.Settings.timeout = 10000;
+
     navigator.geolocation.getCurrentPosition(App.getCurrentPositionSuccess, 
                                              App.getCurrentPositionError,
                                              App.geoposOptions
