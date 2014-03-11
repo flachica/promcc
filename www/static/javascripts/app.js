@@ -1,3 +1,4 @@
+var DEVEL = true;
 var defaultLocation = {};
 defaultLocation.lat = 40.43794472516468;
 defaultLocation.lon = -3.6795366500000455;
@@ -8,11 +9,10 @@ var App = (function(lng, undefined) {
     
     geoposOptions = { timeout: 10000, enableHighAccuracy: true };
     
-    //prod
-    serverInfo = {urlList: 'http://app.hubservice.es/promoshop/promccweb/index.php/api/list'};    
+    serverDev = {urlList: 'http://localhost/promccweb/index.php/api/list'};
+    serverProd = {urlList: 'http://app.hubservice.es/promoshop/promccweb/index.php/api/list'};
     
-    //debug
-    //serverInfo = {urlList: 'http://localhost/promccweb/index.php/api/list'};    
+    serverInfo = DEVEL ? serverDev : serverProd;    
     
     getCurrentPositionSuccess = function (position) {
         App.initializeMap(position.coords.latitude, position.coords.longitude);
@@ -24,7 +24,6 @@ var App = (function(lng, undefined) {
           lng: position.coords.longitude,
           title: 'Mi ubicación'
         });
-        App.map.setCenter(position.coords.latitude, position.coords.longitude);
         App.getCentrosComerciales();
     };
 
@@ -61,14 +60,21 @@ var App = (function(lng, undefined) {
             App.map.addMarker({
               lat: result[i].latitud,
               lng: result[i].longitud,
-              title: result[i].nombre
+              title: result[i].nombre,
+              icon: './img/marcador_cc.png',
             });
+            if (i==0) {
+                App.map.setCenter(result[i].latitud, result[i].longitud);
+            }
         }
     };
 
     getCentrosComerciales = function () {
-        params = {model: 'Centrocomercial'};        
-        Lungo.Service.get(App.serverInfo.urlList, params, pintaCentrosComerciales, "json");
+        params = {model: 'Centrocomercial', curLat: App.currentPosition.lat, curLon: App.currentPosition.lon};
+        if (DEVEL)        
+            Lungo.Service.get(App.serverInfo.urlList, params, pintaCentrosComerciales, "json");
+        else
+            Lungo.Service.post(App.serverInfo.urlList, params, pintaCentrosComerciales, "json");
     };
 
     sectionTrigger = function(event) {
@@ -221,7 +227,12 @@ Lungo.ready(function() {
 
     Lungo.Service.Settings.async = true;
     Lungo.Service.Settings.error = function(type, xhr){
-        console.log("Hubo un error al acceder al servidor, type: " + type + " xhr: " + xhr);
+        console.log("Hubo un error al acceder al servidor");
+        console.log(type);
+        console.log(xhr);
+        if (DEVEL)
+            $$('#main-article').html(xhr.response);
+
         Lungo.Notification.hide();
     };
     
