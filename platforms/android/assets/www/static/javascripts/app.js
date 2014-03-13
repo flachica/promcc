@@ -9,7 +9,7 @@ var App = (function(lng, undefined) {
     
     geoposOptions = { timeout: 10000, enableHighAccuracy: true };
     
-    serverDev = {urlList: 'http://10.13.16.237/promccweb/index.php/api/list'};
+    serverDev = {urlList: 'http://192.168.1.130/promccweb/index.php/api/list'};
     serverProd = {urlList: 'http://app.hubservice.es/promoshop/promccweb/index.php/api/list'};
     
     serverInfo = DEVEL ? serverDev : serverProd;    
@@ -34,7 +34,7 @@ var App = (function(lng, undefined) {
         App.geoposOptions.enableHighAccuracy = false;
         App.geoposOptions.timeout = 5000;
         navigator.geolocation.getCurrentPosition(App.getCurrentPositionSuccess, 
-                                             function(error){alert('Geolocation failed: '+error.message)},
+                                             function(error){alert('Geolocation failed: '+error.message);Lungo.Notification.hide();},
                                              App.geoposOptions
                                             );
     };
@@ -60,6 +60,46 @@ var App = (function(lng, undefined) {
 
     verTiendas = function(ccIDHandler) {
         tiendaID = ccIDHandler.substring(10);
+        Lungo.Notification.show();
+        App.map.removeMarkers();
+        App.map.addMarker({
+          lat: App.currentPosition.lat,
+          lng: App.currentPosition.lon,
+          title: 'Mi ubicación',
+          infoWindow: {
+                  content: '<p>Mi ubicación</p>'
+              }
+        });
+        getTiendas(tiendaID);
+    };
+
+    getTiendas = function(parCcID) {
+        params = {model: 'Tienda', ccID: parCcID};
+        if (DEVEL)        
+            Lungo.Service.get(App.serverInfo.urlList, params, pintaTiendas, "json");
+        else
+            Lungo.Service.post(App.serverInfo.urlList, params, pintaTiendas, "json");
+    };
+
+    pintaTiendas = function(result) {
+        for (var i = 0; i < result.length; i++) {
+            App.map.addMarker({
+              lat: result[i].latitud,
+              lng: result[i].longitud,
+              title: result[i].nombre,
+              icon: './img/marcador_tienda.png',
+              infoWindow: {
+                  content: '<p>' + result[i].nombre + '</p>' + result[i].descripcion + '<br>' + 
+                           '<nav class="on-left"><button id="btnTiendas' + result[i].idcentrocomercial + '" onclick="App.verTiendas(this.id)" data-view-article="article_1" data-label="Home">Tiendas</button></nav><nav class="on-right"><button id="btnOfertas" onclick="App.verTiendas(this.id)" data-label="Section">Ofertas</button></nav>',
+                maxWidth: '150px'
+              }
+            });
+            if (i==0) {
+                App.map.setCenter(result[i].latitud, result[i].longitud);
+            }
+        }
+        App.map.zoomIn(3);
+        Lungo.Notification.hide();
     };
 
     verOfertasCC = function(ccIDHandler) {
@@ -89,6 +129,8 @@ var App = (function(lng, undefined) {
                 inicios = inicios + 1;
                 localStorage.setItem("inicios", inicios);
                 Lungo.Notification.html('<h1>Comience</h1>Pinche en el centro comercial más cercano para encontrar sus ofertas', "Cerrar");
+            } else {
+                Lungo.Notification.hide();
             }
         }else{
             Lungo.Notification.html('<h1>Comience</h1>Pinche en el centro comercial más cercano para encontrar sus ofertas', "Cerrar");
@@ -147,110 +189,6 @@ var App = (function(lng, undefined) {
 
 App.carousel = {prev: null, next: null};
 
-Lungo.Events.init({
-    'load section#layoutevents'     : App.sectionTrigger,
-
-    'unload section#layoutevents'   : App.sectionTrigger,
-
-    'load article#environment'      : App.environment,
-
-    'load article#touchevents'      : function(event) {
-
-        ["singleTap", "doubleTap", "hold",
-            "swipe", "-swiping", "swipeLeft", "swipeRight", "swipeUp", "swipeDown",
-            "rotate", "rotateLeft", "rotateRight",
-            "pinch", "pinchIn", "pinchOut",
-            "drag", "dragLeft", "dragRight", "dragUp", "dragDown"].forEach(function(type) {
-            $$("article#touchevents #gestures").on(type, function(event) {
-                $$(this).siblings('.console.output').append(' | ' + type);
-            });
-        });
-
-        $$("[data-action=clean_console]").tap(function(event) {
-            $$('.console.output').html("");
-        });
-
-        $$("[data-action=twitter]").tap(function(event) {
-            window.open("https://twitter.com/intent/tweet?original_referer=http%3A%2F%2Flungo.tapquo.com%2F&text=@lungojs a framework for developers who want to design, build and share cross device apps", "_blank");
-        });
-
-    },
-
-
-    'load section#carousel': function(event) {
-        App.carousel = Lungo.Element.Carousel($$('[data-control=carousel]')[0], function(index, element) {
-            Lungo.dom("section#carousel .title span").html(index + 1);
-        });
-    },
-
-    'tap section#carousel > header [data-direction=left]':  App.carousel.prev,
-
-    'tap section#carousel > header [data-direction=right]': App.carousel.next,
-
-    'load section#pull': function(event) {
-        App.pull = new Lungo.Element.Pull('section#pull article', {
-            onPull: "Pull down to refresh",
-            onRelease: "Release to get new data",
-            onRefresh: "Refreshing...",
-            callback: function() {
-                alert("Pull & Refresh completed!");
-                App.pull.hide();
-            }
-        });
-    },
-
-
-    'touch article#notification a[data-action=normal]': function() {
-        Lungo.Notification.show('user', 'Title', 2);
-    },
-
-    'touch article#notification a[data-action=loading]': function() {
-        Lungo.Notification.show();
-        setTimeout(Lungo.Notification.hide, 3000);
-    },
-
-    'touch article#notification a[data-action=success]': function() {
-        Lungo.Notification.success('Title', 'Description', 'ok', 2);
-    },
-
-    'touch article#notification a[data-action=error]': function() {
-        Lungo.Notification.error('Title', 'Description', 'remove', 2);
-    },
-
-    'touch article#notification a[data-action=confirm]': function() {
-        Lungo.Notification.confirm({
-            icon: 'user',
-            title: 'Lorem ipsum dolor sit amet, consectetur adipisicing.',
-            description: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nemo amet nulla dolorum hic eum debitis dolorem expedita? Commodi molestiae tempora totam explicabo sed deserunt cum iusto eos perspiciatis ea in.',
-            accept: {
-                icon: 'checkmark',
-                label: 'Accept',
-                callback: function(){ alert("Yes!"); }
-            },
-            cancel: {
-                icon: 'close',
-                label: 'Cancel',
-                callback: function(){ alert("No!"); }
-            }
-        });
-    },
-
-    'touch article#notification a[data-action=html]': function() {
-        Lungo.Notification.html('<h1>Hello World</h1>', "Close");
-    },
-
-    'touch article#notification a[data-action=chaining]': function() {
-        Lungo.Notification.show('user', 'user', 2, function() {
-            Lungo.Notification.error('Title 2', 'Description 2', 'remove',  2, function() {
-                Lungo.Notification.show('cog', 'cog', 2, function() {
-                    Lungo.Notification.html('<h1>Hello World</h1>', "Close");
-                });
-            });
-        });
-    }
-
-});
-
 Lungo.ready(function() {
     Lungo.Element.loading("#map", 1);
 
@@ -267,7 +205,7 @@ Lungo.ready(function() {
     
     Lungo.Service.Settings.crossDomain = true;
     Lungo.Service.Settings.timeout = 10000;
-
+    Lungo.Notification.show();
     navigator.geolocation.getCurrentPosition(App.getCurrentPositionSuccess, 
                                              App.getCurrentPositionError,
                                              App.geoposOptions
