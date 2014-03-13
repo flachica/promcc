@@ -1,3 +1,4 @@
+var DEVEL = true;
 var defaultLocation = {};
 defaultLocation.lat = 40.43794472516468;
 defaultLocation.lon = -3.6795366500000455;
@@ -8,11 +9,10 @@ var App = (function(lng, undefined) {
     
     geoposOptions = { timeout: 10000, enableHighAccuracy: true };
     
-    //prod
-    serverInfo = {urlList: 'http://app.hubservice.es/promoshop/promccweb/index.php/api/list'};    
+    serverDev = {urlList: 'http://10.13.16.237/promccweb/index.php/api/list'};
+    serverProd = {urlList: 'http://app.hubservice.es/promoshop/promccweb/index.php/api/list'};
     
-    //debug
-    //serverInfo = {urlList: 'http://localhost/promccweb/index.php/api/list'};    
+    serverInfo = DEVEL ? serverDev : serverProd;    
     
     getCurrentPositionSuccess = function (position) {
         App.initializeMap(position.coords.latitude, position.coords.longitude);
@@ -22,9 +22,11 @@ var App = (function(lng, undefined) {
         App.map.addMarker({
           lat: position.coords.latitude,
           lng: position.coords.longitude,
-          title: 'Mi ubicación'
+          title: 'Mi ubicación',
+          infoWindow: {
+                  content: '<p>Mi ubicación</p>'
+              }
         });
-        App.map.setCenter(position.coords.latitude, position.coords.longitude);
         App.getCentrosComerciales();
     };
 
@@ -56,19 +58,50 @@ var App = (function(lng, undefined) {
         App.currentPosition = new Object();
     };
 
+    verTiendas = function(ccIDHandler) {
+        tiendaID = ccIDHandler.substring(10);
+    };
+
+    verOfertasCC = function(ccIDHandler) {
+        alert(ccIDHandler);
+    };
+
     pintaCentrosComerciales = function(result) {
         for (var i = 0; i < result.length; i++) {
             App.map.addMarker({
               lat: result[i].latitud,
               lng: result[i].longitud,
-              title: result[i].nombre
+              title: result[i].nombre,
+              icon: './img/marcador_cc.png',
+              infoWindow: {
+                  content: '<p>' + result[i].nombre + '</p>' + result[i].descripcion + '<br>' + 
+                           '<nav class="on-left"><button id="btnTiendas' + result[i].idcentrocomercial + '" onclick="App.verTiendas(this.id)" data-view-article="article_1" data-label="Home">Tiendas</button></nav><nav class="on-right"><button id="btnOfertas" onclick="App.verTiendas(this.id)" data-label="Section">Ofertas</button></nav>',
+                maxWidth: '150px'
+              }
             });
+            if (i==0) {
+                App.map.setCenter(result[i].latitud, result[i].longitud);
+            }
+        }
+        if (localStorage.getItem("inicios")){
+            if (localStorage.getItem("inicios")<3){
+                var inicios = parseInt(localStorage.getItem("inicios"));
+                inicios = inicios + 1;
+                localStorage.setItem("inicios", inicios);
+                Lungo.Notification.html('<h1>Comience</h1>Pinche en el centro comercial más cercano para encontrar sus ofertas', "Cerrar");
+            }
+        }else{
+            Lungo.Notification.html('<h1>Comience</h1>Pinche en el centro comercial más cercano para encontrar sus ofertas', "Cerrar");
+            localStorage.setItem("inicios",1);
         }
     };
 
     getCentrosComerciales = function () {
-        params = {model: 'Centrocomercial'};        
-        Lungo.Service.get(App.serverInfo.urlList, params, pintaCentrosComerciales, "json");
+        params = {model: 'Centrocomercial', curLat: App.currentPosition.lat, curLon: App.currentPosition.lon};
+        if (DEVEL)        
+            Lungo.Service.get(App.serverInfo.urlList, params, pintaCentrosComerciales, "json");
+        else
+            Lungo.Service.post(App.serverInfo.urlList, params, pintaCentrosComerciales, "json");
     };
 
     sectionTrigger = function(event) {
@@ -105,7 +138,9 @@ var App = (function(lng, undefined) {
         geoposOptions: geoposOptions,
         initializeMap: initializeMap,
         serverInfo: serverInfo,
-        getCentrosComerciales: getCentrosComerciales
+        getCentrosComerciales: getCentrosComerciales,
+        verTiendas: verTiendas,
+        verOfertasCC: verOfertasCC
     };
 
 })(Lungo);
@@ -221,7 +256,12 @@ Lungo.ready(function() {
 
     Lungo.Service.Settings.async = true;
     Lungo.Service.Settings.error = function(type, xhr){
-        console.log("Hubo un error al acceder al servidor, type: " + type + " xhr: " + xhr);
+        console.log("Hubo un error al acceder al servidor");
+        console.log(type);
+        console.log(xhr);
+        if (DEVEL)
+            $$('#main-article').html(xhr.response);
+
         Lungo.Notification.hide();
     };
     

@@ -147,8 +147,10 @@
 /home/fernando/git/promcc/platforms/android/assets/www/package/lungo/lungo.icon.css \
 /home/fernando/git/promcc/platforms/android/assets/www/img/startup-image-640x920.png \
 /home/fernando/git/promcc/platforms/android/assets/www/img/startup-image-1496x2048.png \
+/home/fernando/git/promcc/platforms/android/assets/www/img/marcador_cc.png \
 /home/fernando/git/promcc/platforms/android/assets/www/img/startup-image-1536x2008.png \
 /home/fernando/git/promcc/platforms/android/assets/www/img/startup-image-748x1024.png \
+/home/fernando/git/promcc/platforms/android/assets/www/img/marcador_tienda.png \
 /home/fernando/git/promcc/platforms/android/assets/www/img/startup-image-640x1096.png \
 /home/fernando/git/promcc/platforms/android/assets/www/img/icon-72.png \
 /home/fernando/git/promcc/platforms/android/assets/www/img/logo.png \
