@@ -65,7 +65,7 @@
             </nav>
         </header>
 
-        <article id="main-article" class="scroll">
+        <article id="main-article" class="scroll list">
             <div id="map"></div>
         </article>
     </section>
@@ -81,12 +81,15 @@
             resources: [
                 'static/asides/menu.html',
                 'static/sections/ofertas.html',
+                'static/sections/busqueda.html',
                 ],
             history: false
         });
     </script>
     <script type="text/javascript" src="./package/google/googlemapapi.js"></script>
     <script src="./components/gmaps/gmaps.js"></script>
+    <script src="./components/mustache/mustache.min.js"></script>
+    <script src="./components/flachica/RenderedView.js"></script>
     <script src="static/javascripts/app.js"></script>
 </body>
 </html>

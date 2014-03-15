@@ -1,3 +1,3 @@
-# view AndroidManifest.xml #generated:38
+# view AndroidManifest.xml #generated:39
 -keep class es.wion.promoshop.PromoShop { <init>(...); }
 

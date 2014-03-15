@@ -1,0 +1,29 @@
+<section id="busqueda" data-transition="slide">
+    <header data-title="Búsqueda" data-back="chevron-left">
+        
+    </header>
+
+    <article id="container" class="active list indented">
+    <ul>
+        <li class="anchor contrast">Criterio de búsqueda</li>
+    </ul>
+    <div id="frmBusqueda" class="form" >
+        <label>Oferta</label>
+        <input id="txtBusqueda" type="text" placeholder="Descripción de la oferta" class="border" />
+
+        <label>Centro comercial</label>
+        <label class="select border">
+            <select id="selectCC">
+                <option value="-1">[Cualquiera]</option>
+            </select>
+        </label>
+        <label>Tienda</label>
+        <label class="select border">
+            <select id="selectTD">
+                <option value="-1">[Cualquiera]</option>
+            </select>
+        </label>
+
+        <button onclick="App.busca();" class="anchor cancel margin-bottom" data-icon="search" data-label="Buscar"></button>
+    </div>
+</section>

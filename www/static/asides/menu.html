@@ -12,9 +12,14 @@
                 <small>Ofertas instantáneas</small>
             </li>
 
-            <li data-view-section="ofertas" data-async="static/sections/ofertasCerca.html" data-icon="gift">
-                <div class="tag on-right" data-count="23"></div>
-                <strong>Ofertas cerca</strong>
+            <li id="verMenuCcCercanos" onClick="App.ccCercano()" data-icon="map-marker">
+                <div class="tag on-right"></div>
+                <strong>CC cercanos </strong>
+            </li>
+
+            <li onClick="App.getFormBusqueda()" data-icon="search">
+                <div class="tag on-right"></div>
+                <strong>Busque ofertas</strong>
             </li>
         </ul>
     </article>

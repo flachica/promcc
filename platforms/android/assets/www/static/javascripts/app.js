@@ -3,16 +3,77 @@ var defaultLocation = {};
 defaultLocation.lat = 40.43794472516468;
 defaultLocation.lon = -3.6795366500000455;
 
+Lungo.ready(function() {
+    Lungo.Element.loading("#map", 1);
+
+    Lungo.Service.Settings.async = true;
+    Lungo.Service.Settings.error = function(type, xhr){
+        console.log("Hubo un error al acceder al servidor");
+        console.log(type);
+        console.log(xhr);
+        if (DEVEL)
+            $$('#main-article').html(xhr.response);
+
+        Lungo.Notification.error(
+            "Error",
+            type,
+            "cancel",
+            7
+        );
+    };
+    
+    Lungo.Service.Settings.crossDomain = true;
+    Lungo.Service.Settings.timeout = 10000;
+    App.ccCercano();
+    Lungo.dom('#main').on('load', function(event){
+        $$('#verMenuCcCercanos').removeClass('hidden');
+    });
+});
+
 var App = (function(lng, undefined) {
     map = {};
     currentPosition = {};
     
     geoposOptions = { timeout: 10000, enableHighAccuracy: true };
     
+    //casa
     serverDev = {urlList: 'http://192.168.1.130/promccweb/index.php/api/list'};
+    //crea    
+    //serverDev = {urlList: 'http://10.13.16.237/promccweb/index.php/api/list'};
     serverProd = {urlList: 'http://app.hubservice.es/promoshop/promccweb/index.php/api/list'};
     
-    serverInfo = DEVEL ? serverDev : serverProd;    
+    serverInfo = DEVEL ? serverDev : serverProd;
+
+    resultadoErrorPosicion = function(){
+        $$('#main-article').html('');
+        var result = [{"idoferta":"-1","idtienda":"-1","nombre":"No se encontró su posición","descripcion":"Busque en el botón superior o pulse aquí para volver a intentarlo","foto":"","numcanjeos":"","fechadesde":"","fechahasta":"","precio":"0.00","codigocanjeo":"","curLat":"","curLon":""}]
+        RenderedView.renderTemplate('ofertas', result, '#main-article',true);
+    };
+
+    pintaCentrosComercialesSEL = function(items) {
+        RenderedView.renderTemplate('selCentrosComerciales', items, '#selectCC', false);
+    };
+
+    pintaTiendasSEL = function(items) {
+        Lungo.Notification.hide();
+        RenderedView.renderTemplate('selTiendas', items, '#selectTD', true);
+    };
+
+    busca = function() {
+        alert($$('#txtBusqueda').val() + ' - ' + $$('#selectCC').val() + ' - ' + $$('#selectTD').val());
+        Lungo.Router.section("oferta");
+    };
+
+    getFormBusqueda = function() {
+        $$('#selectCC').html('<option value="-1">[Cualquiera]</option>');
+        $$('#selectCC').on("change", function(){
+                                        Lungo.Notification.show();
+                                        getTiendas(App.pintaTiendasSEL,this.value);
+                                     }
+                            );
+        getCentrosComerciales(App.pintaCentrosComercialesSEL);
+        Lungo.Router.section("busqueda");
+    };    
     
     getCurrentPositionSuccess = function (position) {
         App.initializeMap(position.coords.latitude, position.coords.longitude);
@@ -27,16 +88,37 @@ var App = (function(lng, undefined) {
                   content: '<p>Mi ubicación</p>'
               }
         });
-        App.getCentrosComerciales();
+        App.getCentrosComerciales(App.pintaCentrosComerciales);
     };
 
     getCurrentPositionError = function (error) {
         App.geoposOptions.enableHighAccuracy = false;
         App.geoposOptions.timeout = 5000;
         navigator.geolocation.getCurrentPosition(App.getCurrentPositionSuccess, 
-                                             function(error){alert('Geolocation failed: '+error.message);Lungo.Notification.hide();},
-                                             App.geoposOptions
+                                                 App.getCurrentPositionLowAccuracyError,
+                                                 App.geoposOptions
                                             );
+    };
+
+    getCurrentPositionLowAccuracyError = function(error){
+        App.currentPosition = {};
+        App.currentPosition.lat = -1;
+        App.currentPosition.lon = -1;
+        Lungo.Notification.confirm({
+            icon: 'map-marker',
+            title: 'Busque en la barra lateral',
+            description: 'No se ha podido ubicar su posición. Si lo desea puede encontrar sus ofertas en el botón superior. <br><br>Si el problema persiste pruebe ir a <b>Ajustes</b> y dar permisos para que las aplicaciones relacionadas con <b>Google</b> puedan acceder a su posición.',
+            accept: {
+                icon: 'checkmark',
+                label: 'Aceptar',
+                callback: App.resultadoErrorPosicion()
+            },
+            cancel: {
+                icon: 'close',
+                label: 'Cerrar',
+                callback: App.resultadoErrorPosicion()
+            }
+        });
     };
 
     initializeMap = function (pLat, pLon) {
@@ -46,7 +128,7 @@ var App = (function(lng, undefined) {
             lng: pLon,
             zoomControl : true,
             zoomControlOpt: {
-                style : 'SMALL',
+                style : 'LARGE',
                 position: 'TOP_LEFT'
             },
             panControl : false,
@@ -59,7 +141,7 @@ var App = (function(lng, undefined) {
     };
 
     verTiendas = function(ccIDHandler) {
-        tiendaID = ccIDHandler.substring(10);
+        ccID = ccIDHandler.substring(10);
         Lungo.Notification.show();
         App.map.removeMarkers();
         App.map.addMarker({
@@ -70,16 +152,37 @@ var App = (function(lng, undefined) {
                   content: '<p>Mi ubicación</p>'
               }
         });
-        getTiendas(tiendaID);
+        getTiendas(App.pintaTiendas, ccID);
     };
 
-    getTiendas = function(parCcID) {
+    getTiendas = function(callback, parCcID) {
         params = {model: 'Tienda', ccID: parCcID};
         if (DEVEL)        
-            Lungo.Service.get(App.serverInfo.urlList, params, pintaTiendas, "json");
+            Lungo.Service.get(App.serverInfo.urlList, params, callback, "json");
         else
-            Lungo.Service.post(App.serverInfo.urlList, params, pintaTiendas, "json");
+            Lungo.Service.post(App.serverInfo.urlList, params, callback, "json");
     };
+
+    getOfertas = function(parTxtBusqueda, parCC, parTD) {
+        params = {model: 'Oferta', txtBusqueda: parTxtBusqueda, ccID: parCC, tdID: parTD};
+        if (DEVEL)        
+            Lungo.Service.get(App.serverInfo.urlList, params, pintaOfertas, "json");
+        else
+            Lungo.Service.post(App.serverInfo.urlList, params, pintaOfertas, "json"); 
+    }
+
+    pintaOfertas = function(result) {
+        Lungo.Router.section("ofertas");
+        RenderedView.renderTemplate('ofertas', result, '#container',true);
+        Lungo.Notification.hide();
+    }
+
+    verOfertasTD = function (tiendaIDHandler) {
+        var tiendaID = tiendaIDHandler.substring(10);
+        $$('#verMenuCcCercanos').addClass('hidden');
+        Lungo.Notification.show();
+        getOfertas('', -1, tiendaID);        
+    }
 
     pintaTiendas = function(result) {
         for (var i = 0; i < result.length; i++) {
@@ -90,7 +193,7 @@ var App = (function(lng, undefined) {
               icon: './img/marcador_tienda.png',
               infoWindow: {
                   content: '<p>' + result[i].nombre + '</p>' + result[i].descripcion + '<br>' + 
-                           '<nav class="on-left"><button id="btnTiendas' + result[i].idcentrocomercial + '" onclick="App.verTiendas(this.id)" data-view-article="article_1" data-label="Home">Tiendas</button></nav><nav class="on-right"><button id="btnOfertas" onclick="App.verTiendas(this.id)" data-label="Section">Ofertas</button></nav>',
+                           '<nav class="on-left"><button id="btnOfertas' + result[i].idtienda + '" onclick="App.verOfertasTD(this.id)">Ofertas</button></nav>',
                 maxWidth: '150px'
               }
             });
@@ -115,7 +218,7 @@ var App = (function(lng, undefined) {
               icon: './img/marcador_cc.png',
               infoWindow: {
                   content: '<p>' + result[i].nombre + '</p>' + result[i].descripcion + '<br>' + 
-                           '<nav class="on-left"><button id="btnTiendas' + result[i].idcentrocomercial + '" onclick="App.verTiendas(this.id)" data-view-article="article_1" data-label="Home">Tiendas</button></nav><nav class="on-right"><button id="btnOfertas" onclick="App.verTiendas(this.id)" data-label="Section">Ofertas</button></nav>',
+                           '<nav class="on-left"><button id="btnTiendas' + result[i].idcentrocomercial + '" onclick="App.verTiendas(this.id)" >Tiendas</button></nav><nav class="on-right"></nav>',
                 maxWidth: '150px'
               }
             });
@@ -138,76 +241,54 @@ var App = (function(lng, undefined) {
         }
     };
 
-    getCentrosComerciales = function () {
+    getCentrosComerciales = function (callback) {
         params = {model: 'Centrocomercial', curLat: App.currentPosition.lat, curLon: App.currentPosition.lon};
         if (DEVEL)        
-            Lungo.Service.get(App.serverInfo.urlList, params, pintaCentrosComerciales, "json");
+            Lungo.Service.get(App.serverInfo.urlList, params, callback, "json");
         else
-            Lungo.Service.post(App.serverInfo.urlList, params, pintaCentrosComerciales, "json");
+            Lungo.Service.post(App.serverInfo.urlList, params, callback, "json");
     };
 
-    sectionTrigger = function(event) {
-        event.stopPropagation();
-        setTimeout(function() {
-            lng.Notification.success("Event: " + event.type, "Layout events manager", "info", 2);
-        }, 500);
-    };
-
-    articleTrigger = function(event) {
-        event.stopPropagation();
-        console.error(event);
-    };
-
-    environment = function(event) {
-        var environment = lng.Core.environment();
-        var el = lng.dom("section > article#environment");
-
-        if (environment.os) {
-            el.find("#os > strong").html(environment.os.name);
-            el.find("#os > small").html(environment.os.version);
+    canjeaOferta = function(ofertaHandlerID) {
+        var ofertaID = ofertaHandlerID.substring(8);
+        //Pincha en error de busqueda        
+        if (ofertaID == "-1") {
+            App.ccCercano();
+        } else {
+            alert(ofertaID);
         }
-        el.find("#resolution > strong").html(environment.screen.height + "p x " + environment.screen.width + "p");
-        el.find("#navigator > strong").html(environment.browser);
-        el.find("#navigator > small").html("Mobile: " + environment.isMobile);
-    };
+    }
+
+    ccCercano = function () {
+        Lungo.Router.section('main');
+        Lungo.Notification.show();
+        navigator.geolocation.getCurrentPosition(App.getCurrentPositionSuccess, 
+                                                 App.getCurrentPositionError,
+                                                 App.geoposOptions
+                                                 );
+    }
 
     return {
-        sectionTrigger: sectionTrigger,
-        articleTrigger: articleTrigger,
-        environment: environment,
         getCurrentPositionSuccess: getCurrentPositionSuccess,
         getCurrentPositionError: getCurrentPositionError,
+        pintaCentrosComerciales: pintaCentrosComerciales,
         geoposOptions: geoposOptions,
         initializeMap: initializeMap,
         serverInfo: serverInfo,
         getCentrosComerciales: getCentrosComerciales,
         verTiendas: verTiendas,
-        verOfertasCC: verOfertasCC
+        verOfertasCC: verOfertasCC,
+        verOfertasTD: verOfertasTD,
+        getOfertas: getOfertas,
+        canjeaOferta: canjeaOferta,
+        getCurrentPositionLowAccuracyError: getCurrentPositionLowAccuracyError,
+        getFormBusqueda: getFormBusqueda,
+        busca: busca,
+        pintaCentrosComercialesSEL: pintaCentrosComercialesSEL,
+        pintaTiendas: pintaTiendas, 
+        pintaTiendasSEL: pintaTiendasSEL, 
+        resultadoErrorPosicion: resultadoErrorPosicion,
+        ccCercano: ccCercano,     
     };
 
 })(Lungo);
-
-App.carousel = {prev: null, next: null};
-
-Lungo.ready(function() {
-    Lungo.Element.loading("#map", 1);
-
-    Lungo.Service.Settings.async = true;
-    Lungo.Service.Settings.error = function(type, xhr){
-        console.log("Hubo un error al acceder al servidor");
-        console.log(type);
-        console.log(xhr);
-        if (DEVEL)
-            $$('#main-article').html(xhr.response);
-
-        Lungo.Notification.hide();
-    };
-    
-    Lungo.Service.Settings.crossDomain = true;
-    Lungo.Service.Settings.timeout = 10000;
-    Lungo.Notification.show();
-    navigator.geolocation.getCurrentPosition(App.getCurrentPositionSuccess, 
-                                             App.getCurrentPositionError,
-                                             App.geoposOptions
-                                            );
-});

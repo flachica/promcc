@@ -54,10 +54,10 @@
 </head>
 
 <body>
-    <section id="main" data-transition="slide" data-aside="features" class="drag">
+    <section id="main" data-transition="slide" data-aside="menu" class="drag">
         <header>
             <nav>
-                <a href="#" data-view-aside="features" data-icon="menu"></a>
+                <a href="#" data-view-aside="menu" data-icon="menu"></a>
             </nav>
             <img src="static/images/logo.png" class="title centered">
             <nav class="on-right">
@@ -65,7 +65,7 @@
             </nav>
         </header>
 
-        <article id="main-article" class="scroll">
+        <article id="main-article" class="scroll list">
             <div id="map"></div>
         </article>
     </section>
@@ -79,14 +79,17 @@
             name: 'PromoShop',
             version: '0.1',
             resources: [
-                'static/asides/features.html',
-                'static/asides/right.html',
-                'static/sections/form.html'],
+                'static/asides/menu.html',
+                'static/sections/ofertas.html',
+                'static/sections/busqueda.html',
+                ],
             history: false
         });
     </script>
     <script type="text/javascript" src="./package/google/googlemapapi.js"></script>
     <script src="./components/gmaps/gmaps.js"></script>
+    <script src="./components/mustache/mustache.min.js"></script>
+    <script src="./components/flachica/RenderedView.js"></script>
     <script src="static/javascripts/app.js"></script>
 </body>
 </html>
