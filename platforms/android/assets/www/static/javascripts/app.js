@@ -24,20 +24,31 @@ Lungo.ready(function() {
     
     Lungo.Service.Settings.crossDomain = true;
     Lungo.Service.Settings.timeout = 10000;
-    App.ccCercano();
+    /*App.ccCercano();
     Lungo.dom('#main').on('load', function(event){
         $$('#verMenuCcCercanos').removeClass('hidden');
-    });
+    });*/
+
+    Lungo.dom('#detalleoferta').on('load', 
+            function (event) {
+                App.segundosCuentaAtras = 15;
+                App.cuentaAtras();
+                App.cuentaAtrasID = setInterval(cuentaAtras,1000);
+            }
+    );
+    Lungo.Router.section("detalleoferta");
 });
 
 var App = (function(lng, undefined) {
     map = {};
     currentPosition = {};
-    
+    segundosCuentaAtras = 10;
+    cuentaAtrasID = {};
+
     geoposOptions = { timeout: 10000, enableHighAccuracy: true };
     
     //casa
-    serverDev = {urlList: 'http://192.168.1.130/promccweb/index.php/api/list'};
+    serverDev = {urlList: 'http://192.168.1.133/promccweb/index.php/api/list'};
     //crea    
     //serverDev = {urlList: 'http://10.13.16.237/promccweb/index.php/api/list'};
     serverProd = {urlList: 'http://app.hubservice.es/promoshop/promccweb/index.php/api/list'};
@@ -249,13 +260,13 @@ var App = (function(lng, undefined) {
             Lungo.Service.post(App.serverInfo.urlList, params, callback, "json");
     };
 
-    canjeaOferta = function(ofertaHandlerID) {
+    verDetalleOferta = function(ofertaHandlerID) {
         var ofertaID = ofertaHandlerID.substring(8);
-        //Pincha en error de busqueda        
+        //Pincha en error de busqueda. La oferta con un ID -1 indica que ha habido un error.       
         if (ofertaID == "-1") {
             App.ccCercano();
         } else {
-            alert(ofertaID);
+            Lungo.Router.section("detalleoferta");
         }
     }
 
@@ -267,6 +278,16 @@ var App = (function(lng, undefined) {
                                                  App.geoposOptions
                                                  );
     }
+
+    cuentaAtras = function () { 
+        $$('#txtCuentaAtras').html(App.segundosCuentaAtras);         
+        App.segundosCuentaAtras -=1;
+         
+        if (App.segundosCuentaAtras <= 0) {
+            $$('#txtCuentaAtras').html(App.segundosCuentaAtras);  
+            clearInterval(App.cuentaAtrasID);
+        }
+     }
 
     return {
         getCurrentPositionSuccess: getCurrentPositionSuccess,
@@ -280,7 +301,7 @@ var App = (function(lng, undefined) {
         verOfertasCC: verOfertasCC,
         verOfertasTD: verOfertasTD,
         getOfertas: getOfertas,
-        canjeaOferta: canjeaOferta,
+        verDetalleOferta: verDetalleOferta,
         getCurrentPositionLowAccuracyError: getCurrentPositionLowAccuracyError,
         getFormBusqueda: getFormBusqueda,
         busca: busca,
@@ -288,7 +309,8 @@ var App = (function(lng, undefined) {
         pintaTiendas: pintaTiendas, 
         pintaTiendasSEL: pintaTiendasSEL, 
         resultadoErrorPosicion: resultadoErrorPosicion,
-        ccCercano: ccCercano,     
+        ccCercano: ccCercano,
+        cuentaAtras: cuentaAtras,  
     };
 
 })(Lungo);

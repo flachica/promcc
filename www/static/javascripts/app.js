@@ -28,16 +28,26 @@ Lungo.ready(function() {
     Lungo.dom('#main').on('load', function(event){
         $$('#verMenuCcCercanos').removeClass('hidden');
     });
+
+    Lungo.dom('#detalleoferta').on('load', 
+            function (event) {
+                App.segundosCuentaAtras = 1395523396;
+                App.cuentaAtras();
+                App.cuentaAtrasID = setInterval(cuentaAtras,1000);
+            }
+    );
 });
 
 var App = (function(lng, undefined) {
     map = {};
     currentPosition = {};
-    
+    segundosCuentaAtras = 0;
+    cuentaAtrasID = {};
+
     geoposOptions = { timeout: 10000, enableHighAccuracy: true };
     
     //casa
-    serverDev = {urlList: 'http://192.168.1.130/promccweb/index.php/api/list'};
+    serverDev = {urlList: 'http://192.168.1.133/promccweb/index.php/api/list'};
     //crea    
     //serverDev = {urlList: 'http://10.13.16.237/promccweb/index.php/api/list'};
     serverProd = {urlList: 'http://app.hubservice.es/promoshop/promccweb/index.php/api/list'};
@@ -249,13 +259,17 @@ var App = (function(lng, undefined) {
             Lungo.Service.post(App.serverInfo.urlList, params, callback, "json");
     };
 
-    canjeaOferta = function(ofertaHandlerID) {
-        var ofertaID = ofertaHandlerID.substring(8);
-        //Pincha en error de busqueda        
-        if (ofertaID == "-1") {
+    verDetalleOferta = function(ofertaHandlerID) {
+        var parOfertaID = ofertaHandlerID.substring(8);
+        //Pincha en error de busqueda. La oferta con un ID -1 indica que ha habido un error.       
+        if (parOfertaID == "-1") {
             App.ccCercano();
         } else {
-            alert(ofertaID);
+            params = {model: 'Oferta', ofertaID: parOfertaID};
+            if (DEVEL)        
+                Lungo.Service.get(App.serverInfo.urlList, params, pintaDetalleOferta, "json");
+            else
+                Lungo.Service.post(App.serverInfo.urlList, params, pintaDetalleOferta, "json");
         }
     }
 
@@ -267,6 +281,38 @@ var App = (function(lng, undefined) {
                                                  App.geoposOptions
                                                  );
     }
+
+    twoDigits = function (value) {
+       if(value < 10) {
+        return '0' + value;
+       }
+       return value;
+    };
+
+    cuentaAtras = function () {
+        var date = new Date(App.segundosCuentaAtras*1000 - new Date().getTime());
+        // display in format HH:MM:SS
+        var txtCuentaAtras = twoDigits(date.getHours()) 
+              + ':' + twoDigits(date.getMinutes()) 
+              + ':' + twoDigits(date.getSeconds());
+        $$('#txtCuentaAtras').html(txtCuentaAtras);         
+        App.segundosCuentaAtras -=1;
+         
+        if (App.segundosCuentaAtras <= 0) {
+            $$('#txtCuentaAtras').html(App.segundosCuentaAtras);  
+            clearInterval(App.cuentaAtrasID);
+        }
+     };
+
+    pintaDetalleOferta = function(result) {
+        Lungo.Router.section("detalleoferta");
+        RenderedView.renderTemplate('detalleOferta', result, '#detalleOferta', true);
+    };
+
+    canjearOferta = function (ofertaHandlerID) {
+        var parOfertaID = ofertaHandlerID.substring(16);
+        alert(parOfertaID);
+    };
 
     return {
         getCurrentPositionSuccess: getCurrentPositionSuccess,
@@ -280,7 +326,7 @@ var App = (function(lng, undefined) {
         verOfertasCC: verOfertasCC,
         verOfertasTD: verOfertasTD,
         getOfertas: getOfertas,
-        canjeaOferta: canjeaOferta,
+        verDetalleOferta: verDetalleOferta,
         getCurrentPositionLowAccuracyError: getCurrentPositionLowAccuracyError,
         getFormBusqueda: getFormBusqueda,
         busca: busca,
@@ -288,7 +334,10 @@ var App = (function(lng, undefined) {
         pintaTiendas: pintaTiendas, 
         pintaTiendasSEL: pintaTiendasSEL, 
         resultadoErrorPosicion: resultadoErrorPosicion,
-        ccCercano: ccCercano,     
+        ccCercano: ccCercano,
+        cuentaAtras: cuentaAtras,
+        pintaDetalleOferta: pintaDetalleOferta,
+        canjearOferta: canjearOferta
     };
 
 })(Lungo);
