@@ -290,12 +290,7 @@ var App = (function(lng, undefined) {
     };
 
     cuentaAtras = function () {
-        var date = new Date(App.segundosCuentaAtras*1000 - new Date().getTime());
-        // display in format HH:MM:SS
-        var txtCuentaAtras = twoDigits(date.getHours()) 
-              + ':' + twoDigits(date.getMinutes()) 
-              + ':' + twoDigits(date.getSeconds());
-        $$('#txtCuentaAtras').html(txtCuentaAtras);         
+        $$('#txtCuentaAtras').html(toDDHHMMSS(App.segundosCuentaAtras));         
         App.segundosCuentaAtras -=1;
          
         if (App.segundosCuentaAtras <= 0) {
@@ -306,12 +301,62 @@ var App = (function(lng, undefined) {
 
     pintaDetalleOferta = function(result) {
         Lungo.Router.section("detalleoferta");
+        App.segundosCuentaAtras = result[0].segundosRestantes;
         RenderedView.renderTemplate('detalleOferta', result, '#detalleOferta', true);
     };
 
     canjearOferta = function (ofertaHandlerID) {
         var parOfertaID = ofertaHandlerID.substring(16);
-        alert(parOfertaID);
+        var method = "GET";
+        if (!DEVEL)
+            method = "POST";
+
+        $$('#pieCanjeo').html(
+                                '<div class="form" align="center">' +
+                                        '<label>Email</label>' +
+                                        '<input id="email" type="email" placeholder="Indique su email" class="border" />' +
+                                        '<button onClick="App.enviaEmail()" class="anchor margin-bottom" data-label="Normal" type="submit">Enviar<button />' +
+                                  '</div>'
+                              );
+    };
+
+    toDDHHMMSS = function (seconds) {
+        var sec_num = parseInt(seconds, 10); // don't forget the second param
+        var hours   = Math.floor(sec_num / 3600);
+        var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+        var seconds = sec_num - (hours * 3600) - (minutes * 60);
+
+        var days = 0;
+        if (hours>23){
+            days = Math.floor(hours / 24);
+            hours = hours - 24;
+        }
+
+        if (hours   < 10) {hours   = "0"+hours;}
+        if (minutes < 10) {minutes = "0"+minutes;}
+        if (seconds < 10) {seconds = "0"+seconds;}
+        var time    = hours+':'+minutes+':'+seconds;
+        if (days > 0)
+            time = days + " días " + time;
+        return time;
+    }
+
+    enviaEmail = function() {
+        if(!validateEmail($$('#email').val())) {
+            Lungo.Notification.error(
+                "Error",
+                "Indique un correo válido",
+                "cancel",
+                7
+            );
+            return;
+        }
+        alert(App.serverInfo.urlList.substring(0,App.serverInfo.urlList.length-4) + "canjear");
+    };
+
+    validateEmail = function (email) { 
+        var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(email);
     };
 
     return {
@@ -337,7 +382,8 @@ var App = (function(lng, undefined) {
         ccCercano: ccCercano,
         cuentaAtras: cuentaAtras,
         pintaDetalleOferta: pintaDetalleOferta,
-        canjearOferta: canjearOferta
+        canjearOferta: canjearOferta,
+        enviaEmail: enviaEmail,
     };
 
 })(Lungo);

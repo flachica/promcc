@@ -35,10 +35,10 @@ var RenderedView = {
                             '</li>' +
                             '<li>' +
                                 '<div align="center">' +
-                                    '<strong id="txtCuentaAtras">12:00:00</strong>' +
+                                    '<strong>Caduca en: </strong><strong id="txtCuentaAtras">00:00:00</strong>' +
                                 '</div>' +
                             '</li>' +
-                            '<li >' +
+                            '<li id="pieCanjeo">' +
                                 '<div align="center">' +
                                     '<button id="btnCanjearOferta{{idoferta}}" onClick="App.canjearOferta(this.id)" class="cancel"><abbr>Canjear</abbr></button>' +
                                 '</div>' +

@@ -24,25 +24,24 @@ Lungo.ready(function() {
     
     Lungo.Service.Settings.crossDomain = true;
     Lungo.Service.Settings.timeout = 10000;
-    /*App.ccCercano();
+    App.ccCercano();
     Lungo.dom('#main').on('load', function(event){
         $$('#verMenuCcCercanos').removeClass('hidden');
-    });*/
+    });
 
     Lungo.dom('#detalleoferta').on('load', 
             function (event) {
-                App.segundosCuentaAtras = 15;
+                App.segundosCuentaAtras = 1395523396;
                 App.cuentaAtras();
                 App.cuentaAtrasID = setInterval(cuentaAtras,1000);
             }
     );
-    Lungo.Router.section("detalleoferta");
 });
 
 var App = (function(lng, undefined) {
     map = {};
     currentPosition = {};
-    segundosCuentaAtras = 10;
+    segundosCuentaAtras = 0;
     cuentaAtrasID = {};
 
     geoposOptions = { timeout: 10000, enableHighAccuracy: true };
@@ -261,12 +260,16 @@ var App = (function(lng, undefined) {
     };
 
     verDetalleOferta = function(ofertaHandlerID) {
-        var ofertaID = ofertaHandlerID.substring(8);
+        var parOfertaID = ofertaHandlerID.substring(8);
         //Pincha en error de busqueda. La oferta con un ID -1 indica que ha habido un error.       
-        if (ofertaID == "-1") {
+        if (parOfertaID == "-1") {
             App.ccCercano();
         } else {
-            Lungo.Router.section("detalleoferta");
+            params = {model: 'Oferta', ofertaID: parOfertaID};
+            if (DEVEL)        
+                Lungo.Service.get(App.serverInfo.urlList, params, pintaDetalleOferta, "json");
+            else
+                Lungo.Service.post(App.serverInfo.urlList, params, pintaDetalleOferta, "json");
         }
     }
 
@@ -279,15 +282,82 @@ var App = (function(lng, undefined) {
                                                  );
     }
 
-    cuentaAtras = function () { 
-        $$('#txtCuentaAtras').html(App.segundosCuentaAtras);         
+    twoDigits = function (value) {
+       if(value < 10) {
+        return '0' + value;
+       }
+       return value;
+    };
+
+    cuentaAtras = function () {
+        $$('#txtCuentaAtras').html(toDDHHMMSS(App.segundosCuentaAtras));         
         App.segundosCuentaAtras -=1;
          
         if (App.segundosCuentaAtras <= 0) {
             $$('#txtCuentaAtras').html(App.segundosCuentaAtras);  
             clearInterval(App.cuentaAtrasID);
         }
-     }
+     };
+
+    pintaDetalleOferta = function(result) {
+        Lungo.Router.section("detalleoferta");
+        App.segundosCuentaAtras = result[0].segundosRestantes;
+        RenderedView.renderTemplate('detalleOferta', result, '#detalleOferta', true);
+    };
+
+    canjearOferta = function (ofertaHandlerID) {
+        var parOfertaID = ofertaHandlerID.substring(16);
+        var method = "GET";
+        if (!DEVEL)
+            method = "POST";
+
+        $$('#pieCanjeo').html(
+                                '<div class="form" align="center">' +
+                                        '<label>Email</label>' +
+                                        '<input id="email" type="email" placeholder="Indique su email" class="border" />' +
+                                        '<button onClick="App.enviaEmail()" class="anchor margin-bottom" data-label="Normal" type="submit">Enviar<button />' +
+                                  '</div>'
+                              );
+    };
+
+    toDDHHMMSS = function (seconds) {
+        var sec_num = parseInt(seconds, 10); // don't forget the second param
+        var hours   = Math.floor(sec_num / 3600);
+        var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+        var seconds = sec_num - (hours * 3600) - (minutes * 60);
+
+        var days = 0;
+        if (hours>23){
+            days = Math.floor(hours / 24);
+            hours = hours - 24;
+        }
+
+        if (hours   < 10) {hours   = "0"+hours;}
+        if (minutes < 10) {minutes = "0"+minutes;}
+        if (seconds < 10) {seconds = "0"+seconds;}
+        var time    = hours+':'+minutes+':'+seconds;
+        if (days > 0)
+            time = days + " días " + time;
+        return time;
+    }
+
+    enviaEmail = function() {
+        if(!validateEmail($$('#email').val())) {
+            Lungo.Notification.error(
+                "Error",
+                "Indique un correo válido",
+                "cancel",
+                7
+            );
+            return;
+        }
+        alert(App.serverInfo.urlList.substring(0,App.serverInfo.urlList.length-4) + "canjear");
+    };
+
+    validateEmail = function (email) { 
+        var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(email);
+    };
 
     return {
         getCurrentPositionSuccess: getCurrentPositionSuccess,
@@ -310,7 +380,10 @@ var App = (function(lng, undefined) {
         pintaTiendasSEL: pintaTiendasSEL, 
         resultadoErrorPosicion: resultadoErrorPosicion,
         ccCercano: ccCercano,
-        cuentaAtras: cuentaAtras,  
+        cuentaAtras: cuentaAtras,
+        pintaDetalleOferta: pintaDetalleOferta,
+        canjearOferta: canjearOferta,
+        enviaEmail: enviaEmail,
     };
 
 })(Lungo);
