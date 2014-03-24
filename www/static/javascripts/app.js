@@ -315,7 +315,8 @@ var App = (function(lng, undefined) {
                                 '<div class="form" align="center">' +
                                         '<label>Email</label>' +
                                         '<input id="email" type="email" placeholder="Indique su email" class="border" />' +
-                                        '<button onClick="App.enviaEmail()" class="anchor margin-bottom" data-label="Normal" type="submit">Enviar<button />' +
+                                        '<input id="ofertaID" type="hidden" value="' + parOfertaID + '" />' +
+                                        '<button onClick="App.dameCodigoBarrasCanjeo()" class="anchor margin-bottom" data-label="Normal" type="submit">Enviar</button>' +
                                   '</div>'
                               );
     };
@@ -341,17 +342,24 @@ var App = (function(lng, undefined) {
         return time;
     }
 
-    enviaEmail = function() {
+    dameCodigoBarrasCanjeo = function() {
         if(!validateEmail($$('#email').val())) {
-            Lungo.Notification.error(
-                "Error",
-                "Indique un correo válido",
-                "cancel",
-                7
-            );
+            alert('Indique un correo válido');
             return;
         }
-        alert(App.serverInfo.urlList.substring(0,App.serverInfo.urlList.length-4) + "canjear");
+        var url = App.serverInfo.urlList.substring(0,App.serverInfo.urlList.length-4) + "canjear";
+        params = {ofertaID: $$('#ofertaID').val(), email: $$('#email').val()};
+        if (DEVEL)        
+            Lungo.Service.get(url, params, App.pintaCodBar, "json");
+        else
+            Lungo.Service.post(url, params, App.pintaCodBar, "json");
+    };
+
+    pintaCodBar = function (result) {
+        if (result.status == "KO"){
+            alert(result.message);
+        } else
+            $$('#pieCanjeo').html("<div align='center'><img src='" + App.serverInfo.urlList.substring(0,App.serverInfo.urlList.length-19) + "/images/" + result.filename + "'></img><strong>" + result.barcode + "</strong></div>");
     };
 
     validateEmail = function (email) { 
@@ -383,7 +391,8 @@ var App = (function(lng, undefined) {
         cuentaAtras: cuentaAtras,
         pintaDetalleOferta: pintaDetalleOferta,
         canjearOferta: canjearOferta,
-        enviaEmail: enviaEmail,
+        dameCodigoBarrasCanjeo: dameCodigoBarrasCanjeo,
+        pintaCodBar: pintaCodBar,
     };
 
 })(Lungo);
