@@ -1,4 +1,4 @@
-var DEVEL = true;
+var DEVEL = false;
 var defaultLocation = {};
 defaultLocation.lat = 40.43794472516468;
 defaultLocation.lon = -3.6795366500000455;
@@ -28,14 +28,6 @@ Lungo.ready(function() {
     Lungo.dom('#main').on('load', function(event){
         $$('#verMenuCcCercanos').removeClass('hidden');
     });
-
-    Lungo.dom('#detalleoferta').on('load', 
-            function (event) {
-                App.segundosCuentaAtras = 1395523396;
-                App.cuentaAtras();
-                App.cuentaAtrasID = setInterval(cuentaAtras,1000);
-            }
-    );
 });
 
 var App = (function(lng, undefined) {
@@ -47,7 +39,7 @@ var App = (function(lng, undefined) {
     geoposOptions = { timeout: 10000, enableHighAccuracy: true };
     
     //casa
-    serverDev = {urlList: 'http://192.168.1.133/promccweb/index.php/api/list'};
+    serverDev = {urlList: 'http://192.168.1.137/promccweb/index.php/api/list'};
     //crea    
     //serverDev = {urlList: 'http://10.13.16.237/promccweb/index.php/api/list'};
     serverProd = {urlList: 'http://app.hubservice.es/promoshop/promccweb/index.php/api/list'};
@@ -70,7 +62,7 @@ var App = (function(lng, undefined) {
     };
 
     busca = function() {
-        alert($$('#txtBusqueda').val() + ' - ' + $$('#selectCC').val() + ' - ' + $$('#selectTD').val());
+        getOfertas($$('#txtBusqueda').val(), $$('#selectCC').val(), $$('#selectTD').val());
         Lungo.Router.section("oferta");
     };
 
@@ -302,6 +294,8 @@ var App = (function(lng, undefined) {
     pintaDetalleOferta = function(result) {
         Lungo.Router.section("detalleoferta");
         App.segundosCuentaAtras = result[0].segundosRestantes;
+        App.cuentaAtras();
+        App.cuentaAtrasID = setInterval(cuentaAtras,1000);
         RenderedView.renderTemplate('detalleOferta', result, '#detalleOferta', true);
     };
 
