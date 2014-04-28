@@ -1,9 +1,12 @@
-var DEVEL = false;
+var DEVEL = true;
 var defaultLocation = {};
 defaultLocation.lat = 40.43794472516468;
 defaultLocation.lon = -3.6795366500000455;
 
 Lungo.ready(function() {
+    if (DEVEL)
+        $$('#menuTest').removeClass('hidden');
+
     Lungo.Element.loading("#map", 1);
 
     Lungo.Service.Settings.async = true;
@@ -39,9 +42,9 @@ var App = (function(lng, undefined) {
     geoposOptions = { timeout: 10000, enableHighAccuracy: true };
     
     //casa
-    serverDev = {urlList: 'http://192.168.1.137/promccweb/index.php/api/list'};
+    serverDev = {urlList: 'http://192.168.1.128/promccweb/index.php/api/list'};
     //crea    
-    //serverDev = {urlList: 'http://10.13.16.237/promccweb/index.php/api/list'};
+    //serverDev = {urlList: 'http://10.13.16.94/promccweb/index.php/api/list'};
     serverProd = {urlList: 'http://app.hubservice.es/promoshop/promccweb/index.php/api/list'};
     
     serverInfo = DEVEL ? serverDev : serverProd;
@@ -75,6 +78,10 @@ var App = (function(lng, undefined) {
                             );
         getCentrosComerciales(App.pintaCentrosComercialesSEL);
         Lungo.Router.section("busqueda");
+    };
+
+    getFormTest = function() {
+        Lungo.Router.section("test");
     };    
     
     getCurrentPositionSuccess = function (position) {
@@ -175,7 +182,7 @@ var App = (function(lng, undefined) {
 
     pintaOfertas = function(result) {
         Lungo.Router.section("ofertas");
-        RenderedView.renderTemplate('ofertas', result, '#container',true);
+        RenderedView.renderProducts('ofertas', result, '#container');
         Lungo.Notification.hide();
     }
 
@@ -324,7 +331,7 @@ var App = (function(lng, undefined) {
         var days = 0;
         if (hours>23){
             days = Math.floor(hours / 24);
-            hours = hours - 24;
+            hours = hours - (days * 24);
         }
 
         if (hours   < 10) {hours   = "0"+hours;}
@@ -387,6 +394,7 @@ var App = (function(lng, undefined) {
         canjearOferta: canjearOferta,
         dameCodigoBarrasCanjeo: dameCodigoBarrasCanjeo,
         pintaCodBar: pintaCodBar,
+        getFormTest: getFormTest,
     };
 
 })(Lungo);
