@@ -10,13 +10,17 @@ var RenderedView = {
                         '</ul>',*/
                         '<li class="thumb big">' +
 						'{{#ofertas}}' +
-						'	<div style="width: 50%">' +
+						'	<div id="liOferta{{idoferta}}" onClick="App.verDetalleOferta(this.id)" style="width: 50%">' +
 						'{{#foto}}' +
 						'		<div class="centered">'+
-						'			<img alt="{{nombre}}" style="max-width: 100%" id="{{idoferta}}" onClick="App.verDetalleOferta(this.id)" src="{{foto}}">'+
+						'			<img  alt="{{nombre}}" style="max-width: 100%" id="{{idoferta}}" src="{{foto}}">'+
 						'			<div>' +
 						'				<span class="on-right tag count">{{precio}} €</span>' +
 						'				<strong>{{nombre}}</strong>' +
+						'				<small>{{nombretienda}}</small>' +
+						'				{{#preciobase}}' +
+						'				<span class="on-right tachado">{{preciobase}} €</span>' +
+						'				{{/preciobase}}' +
 						'				<small>{{descripcion}}</small>' +
 						'			</div>' +
 						'		</div>' +
@@ -41,9 +45,7 @@ var RenderedView = {
                             '<li>' +
                                 '<div class="layout horizontal">' +
                                     '<div align="center" data-layout="primary">' +
-                                        '<img src="./img/icon-57.png"/>' +
-                                    '</div>' +
-                                    '<div vertical-align="middle" align="center" data-layout="primary">' +
+                                        '<img style="width: 50%" src="{{foto}}" />' +
                                         '<button class="cancel"><abbr>{{precio}} &#x20ac;</abbr></button>' +
                                     '</div>' +
                                 '</div>' +
@@ -84,7 +86,7 @@ var RenderedView = {
 				var items = [];
 				for(var j=0;j<itemsForRow;j++){
 					var itemToShow  = (i*itemsForRow) + j;
-                    if (data[itemToShow].foto == '')
+                    if (data[itemToShow].foto == '' || data[itemToShow].foto == null)
                         data[itemToShow].foto = 'static/images/empty.png';
 					items.push(data[itemToShow]);
 				}
@@ -96,7 +98,7 @@ var RenderedView = {
 				var restOfItems = itemsForRow - restOfItemsWithData;
 				for (var i=0;i<restOfItemsWithData;i++){
 					var itemToShow  = data.length - restOfItemsWithData + i;
-                    if (data[itemToShow].foto == '')
+                    if (data[itemToShow].foto == '' || data[itemToShow].foto == null)
                         data[itemToShow].foto = 'static/images/empty.png';                    
 					items.push(data[itemToShow]);
 				}

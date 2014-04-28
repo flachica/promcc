@@ -1,11 +1,13 @@
-var DEVEL = true;
+var DEVEL = false;
 var defaultLocation = {};
 defaultLocation.lat = 40.43794472516468;
 defaultLocation.lon = -3.6795366500000455;
 
 Lungo.ready(function() {
-    if (DEVEL)
+    if (DEVEL) {
         $$('#menuTest').removeClass('hidden');
+        $$('#buscaOfertas').removeClass('hidden');
+    }
 
     Lungo.Element.loading("#map", 1);
 
@@ -68,6 +70,27 @@ var App = (function(lng, undefined) {
         getOfertas($$('#txtBusqueda').val(), $$('#selectCC').val(), $$('#selectTD').val());
         Lungo.Router.section("oferta");
     };
+
+    getOfertasCC = function(ccID) {
+        getOfertas("", ccID, "", -1);
+        Lungo.Router.section("oferta");
+    };
+
+    getOfertasUltimaHora = function() {
+        getOfertas("", "", "", 1);
+        Lungo.Router.section("oferta");
+    };
+
+    getOfertasDosUltimasHoras = function() {
+        getOfertas("", "", "", 2);
+        Lungo.Router.section("oferta");
+    };
+
+    getOfertasTresUltimasHoras = function() {
+        getOfertas("", "", "", 3);
+        Lungo.Router.section("oferta");
+    };
+
 
     getFormBusqueda = function() {
         $$('#selectCC').html('<option value="-1">[Cualquiera]</option>');
@@ -172,8 +195,8 @@ var App = (function(lng, undefined) {
             Lungo.Service.post(App.serverInfo.urlList, params, callback, "json");
     };
 
-    getOfertas = function(parTxtBusqueda, parCC, parTD) {
-        params = {model: 'Oferta', txtBusqueda: parTxtBusqueda, ccID: parCC, tdID: parTD};
+    getOfertas = function(parTxtBusqueda, parCC, parTD, parHoras) {
+        params = {model: 'Oferta', txtBusqueda: parTxtBusqueda, ccID: parCC, tdID: parTD, horas: parHoras};
         if (DEVEL)        
             Lungo.Service.get(App.serverInfo.urlList, params, pintaOfertas, "json");
         else
@@ -227,7 +250,7 @@ var App = (function(lng, undefined) {
               icon: './img/marcador_cc.png',
               infoWindow: {
                   content: '<p>' + result[i].nombre + '</p>' + result[i].descripcion + '<br>' + 
-                           '<nav class="on-left"><button id="btnTiendas' + result[i].idcentrocomercial + '" onclick="App.verTiendas(this.id)" >Tiendas</button></nav><nav class="on-right"></nav>',
+                           '<nav class="on-left"><button id="btnTiendas' + result[i].idcentrocomercial + '" onclick="App.getOfertasCC(this.id.substring(10))" >Ofertas</button></nav><nav class="on-right"></nav>',
                 maxWidth: '150px'
               }
             });
@@ -384,6 +407,7 @@ var App = (function(lng, undefined) {
         getCurrentPositionLowAccuracyError: getCurrentPositionLowAccuracyError,
         getFormBusqueda: getFormBusqueda,
         busca: busca,
+        getOfertasCC: getOfertasCC,
         pintaCentrosComercialesSEL: pintaCentrosComercialesSEL,
         pintaTiendas: pintaTiendas, 
         pintaTiendasSEL: pintaTiendasSEL, 
@@ -395,6 +419,9 @@ var App = (function(lng, undefined) {
         dameCodigoBarrasCanjeo: dameCodigoBarrasCanjeo,
         pintaCodBar: pintaCodBar,
         getFormTest: getFormTest,
+        getOfertasUltimaHora: getOfertasUltimaHora,
+        getOfertasDosUltimasHoras: getOfertasDosUltimasHoras,
+        getOfertasTresUltimasHoras: getOfertasTresUltimasHoras,
     };
 
 })(Lungo);

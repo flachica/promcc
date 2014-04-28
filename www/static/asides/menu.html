@@ -12,12 +12,24 @@
                 <small>Ofertas instantáneas</small>
             </li>
 
-            <li id="verMenuCcCercanos" onClick="App.ccCercano()" data-icon="map-marker">
-                <strong>CC cercanos </strong>
+            <li id="verMenuCcCercanos" onClick="App.getOfertasUltimaHora()" data-icon="search">
+                <strong>Última hora</strong>
             </li>
 
-            <li onClick="App.getFormBusqueda()" data-icon="search">
+            <li onClick="App.getOfertasDosUltimasHoras()" data-icon="search">
+                <strong>Dos Últimas horas</strong>
+            </li>
+
+            <li onClick="App.getOfertasTresUltimasHoras()" data-icon="search">
+                <strong>Tres Últimas horas</strong>
+            </li>
+
+            <li id="buscaOfertas" class="hidden" onClick="App.getFormBusqueda()" data-icon="search">
                 <strong>Busque ofertas</strong>
+            </li>
+
+            <li class="hidden" id="verMenuCcCercanos" onClick="App.ccCercano()" data-icon="map-marker">
+                <strong>CC cercanos </strong>
             </li>
 
             <li id="menuTest" class="hidden" onClick="App.getFormTest()" data-icon="search">
