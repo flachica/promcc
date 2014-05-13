@@ -10,3 +10,7 @@ strong {
 .tachado {
     text-decoration: line-through;
 }
+
+small {
+   white-space: inherit !important;
+}

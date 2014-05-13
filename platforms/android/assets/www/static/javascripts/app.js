@@ -1,9 +1,14 @@
-var DEVEL = true;
+var DEVEL = false;
 var defaultLocation = {};
 defaultLocation.lat = 40.43794472516468;
 defaultLocation.lon = -3.6795366500000455;
 
 Lungo.ready(function() {
+    if (DEVEL) {
+        $$('#menuTest').removeClass('hidden');
+        $$('#buscaOfertas').removeClass('hidden');
+    }
+
     Lungo.Element.loading("#map", 1);
 
     Lungo.Service.Settings.async = true;
@@ -28,14 +33,6 @@ Lungo.ready(function() {
     Lungo.dom('#main').on('load', function(event){
         $$('#verMenuCcCercanos').removeClass('hidden');
     });
-
-    Lungo.dom('#detalleoferta').on('load', 
-            function (event) {
-                App.segundosCuentaAtras = 1395523396;
-                App.cuentaAtras();
-                App.cuentaAtrasID = setInterval(cuentaAtras,1000);
-            }
-    );
 });
 
 var App = (function(lng, undefined) {
@@ -47,9 +44,9 @@ var App = (function(lng, undefined) {
     geoposOptions = { timeout: 10000, enableHighAccuracy: true };
     
     //casa
-    serverDev = {urlList: 'http://192.168.1.133/promccweb/index.php/api/list'};
+    serverDev = {urlList: 'http://192.168.1.128/promccweb/index.php/api/list'};
     //crea    
-    //serverDev = {urlList: 'http://10.13.16.237/promccweb/index.php/api/list'};
+    //serverDev = {urlList: 'http://10.13.16.94/promccweb/index.php/api/list'};
     serverProd = {urlList: 'http://app.hubservice.es/promoshop/promccweb/index.php/api/list'};
     
     serverInfo = DEVEL ? serverDev : serverProd;
@@ -70,9 +67,30 @@ var App = (function(lng, undefined) {
     };
 
     busca = function() {
-        alert($$('#txtBusqueda').val() + ' - ' + $$('#selectCC').val() + ' - ' + $$('#selectTD').val());
+        getOfertas($$('#txtBusqueda').val(), $$('#selectCC').val(), $$('#selectTD').val());
         Lungo.Router.section("oferta");
     };
+
+    getOfertasCC = function(ccID, ccNombre) {
+        getOfertas("", ccID, "", -1);
+        Lungo.Notification.html('<h1>Bienvenido/a</h1>Usted está viendo las ofertas del Centro Comercial ' + ccNombre, "Cerrar");
+    };
+
+    getOfertasUltimaHora = function() {
+        getOfertas("", "", "", 1);
+        Lungo.Router.section("oferta");
+    };
+
+    getOfertasDosUltimasHoras = function() {
+        getOfertas("", "", "", 2);
+        Lungo.Router.section("oferta");
+    };
+
+    getOfertasTresUltimasHoras = function() {
+        getOfertas("", "", "", 3);
+        Lungo.Router.section("oferta");
+    };
+
 
     getFormBusqueda = function() {
         $$('#selectCC').html('<option value="-1">[Cualquiera]</option>');
@@ -83,10 +101,16 @@ var App = (function(lng, undefined) {
                             );
         getCentrosComerciales(App.pintaCentrosComercialesSEL);
         Lungo.Router.section("busqueda");
+    };
+
+    getFormTest = function() {
+        Lungo.Router.section("test");
     };    
     
     getCurrentPositionSuccess = function (position) {
+        /*//flachica: Inicializo mapa
         App.initializeMap(position.coords.latitude, position.coords.longitude);
+        App.currentPosition = new Object();
         App.currentPosition.lat = position.coords.latitude;
         App.currentPosition.lon = position.coords.longitude;
 
@@ -97,7 +121,11 @@ var App = (function(lng, undefined) {
           infoWindow: {
                   content: '<p>Mi ubicación</p>'
               }
-        });
+        });*/
+
+        App.currentPosition = new Object();
+        App.currentPosition.lat = position.coords.latitude;
+        App.currentPosition.lon = position.coords.longitude;
         App.getCentrosComerciales(App.pintaCentrosComerciales);
     };
 
@@ -146,8 +174,6 @@ var App = (function(lng, undefined) {
             mapTypeControl: false,
             overviewMapControl: false
         });
-
-        App.currentPosition = new Object();
     };
 
     verTiendas = function(ccIDHandler) {
@@ -173,8 +199,8 @@ var App = (function(lng, undefined) {
             Lungo.Service.post(App.serverInfo.urlList, params, callback, "json");
     };
 
-    getOfertas = function(parTxtBusqueda, parCC, parTD) {
-        params = {model: 'Oferta', txtBusqueda: parTxtBusqueda, ccID: parCC, tdID: parTD};
+    getOfertas = function(parTxtBusqueda, parCC, parTD, parHoras) {
+        params = {model: 'Oferta', txtBusqueda: parTxtBusqueda, ccID: parCC, tdID: parTD, horas: parHoras};
         if (DEVEL)        
             Lungo.Service.get(App.serverInfo.urlList, params, pintaOfertas, "json");
         else
@@ -183,8 +209,7 @@ var App = (function(lng, undefined) {
 
     pintaOfertas = function(result) {
         Lungo.Router.section("ofertas");
-        RenderedView.renderTemplate('ofertas', result, '#container',true);
-        Lungo.Notification.hide();
+        RenderedView.renderProducts('ofertas', result, '#container');
     }
 
     verOfertasTD = function (tiendaIDHandler) {
@@ -220,7 +245,8 @@ var App = (function(lng, undefined) {
     };
 
     pintaCentrosComerciales = function(result) {
-        for (var i = 0; i < result.length; i++) {
+        /*  //flachica: logica para pintar el mapa con los puntos marcadores de centros comerciales
+            for (var i = 0; i < result.length; i++) {
             App.map.addMarker({
               lat: result[i].latitud,
               lng: result[i].longitud,
@@ -228,7 +254,7 @@ var App = (function(lng, undefined) {
               icon: './img/marcador_cc.png',
               infoWindow: {
                   content: '<p>' + result[i].nombre + '</p>' + result[i].descripcion + '<br>' + 
-                           '<nav class="on-left"><button id="btnTiendas' + result[i].idcentrocomercial + '" onclick="App.verTiendas(this.id)" >Tiendas</button></nav><nav class="on-right"></nav>',
+                           '<nav class="on-left"><button id="btnTiendas' + result[i].idcentrocomercial + '" onclick="App.getOfertasCC(this.id.substring(10))" >Ofertas</button></nav><nav class="on-right"></nav>',
                 maxWidth: '150px'
               }
             });
@@ -248,7 +274,8 @@ var App = (function(lng, undefined) {
         }else{
             Lungo.Notification.html('<h1>Comience</h1>Pinche en el centro comercial más cercano para encontrar sus ofertas', "Cerrar");
             localStorage.setItem("inicios",1);
-        }
+        }*/
+        App.getOfertasCC(result[0].idcentrocomercial, result[0].nombre);
     };
 
     getCentrosComerciales = function (callback) {
@@ -302,6 +329,8 @@ var App = (function(lng, undefined) {
     pintaDetalleOferta = function(result) {
         Lungo.Router.section("detalleoferta");
         App.segundosCuentaAtras = result[0].segundosRestantes;
+        App.cuentaAtras();
+        App.cuentaAtrasID = setInterval(cuentaAtras,1000);
         RenderedView.renderTemplate('detalleOferta', result, '#detalleOferta', true);
     };
 
@@ -316,7 +345,7 @@ var App = (function(lng, undefined) {
                                         '<label>Email</label>' +
                                         '<input id="email" type="email" placeholder="Indique su email" class="border" />' +
                                         '<input id="ofertaID" type="hidden" value="' + parOfertaID + '" />' +
-                                        '<button onClick="App.dameCodigoBarrasCanjeo()" class="anchor margin-bottom" data-label="Normal" type="submit">Enviar<button />' +
+                                        '<button onClick="App.dameCodigoBarrasCanjeo()" class="anchor margin-bottom" data-label="Normal" type="submit">Enviar</button>' +
                                   '</div>'
                               );
     };
@@ -330,7 +359,7 @@ var App = (function(lng, undefined) {
         var days = 0;
         if (hours>23){
             days = Math.floor(hours / 24);
-            hours = hours - 24;
+            hours = hours - (days * 24);
         }
 
         if (hours   < 10) {hours   = "0"+hours;}
@@ -383,6 +412,7 @@ var App = (function(lng, undefined) {
         getCurrentPositionLowAccuracyError: getCurrentPositionLowAccuracyError,
         getFormBusqueda: getFormBusqueda,
         busca: busca,
+        getOfertasCC: getOfertasCC,
         pintaCentrosComercialesSEL: pintaCentrosComercialesSEL,
         pintaTiendas: pintaTiendas, 
         pintaTiendasSEL: pintaTiendasSEL, 
@@ -393,6 +423,10 @@ var App = (function(lng, undefined) {
         canjearOferta: canjearOferta,
         dameCodigoBarrasCanjeo: dameCodigoBarrasCanjeo,
         pintaCodBar: pintaCodBar,
+        getFormTest: getFormTest,
+        getOfertasUltimaHora: getOfertasUltimaHora,
+        getOfertasDosUltimasHoras: getOfertasDosUltimasHoras,
+        getOfertasTresUltimasHoras: getOfertasTresUltimasHoras,
     };
 
 })(Lungo);

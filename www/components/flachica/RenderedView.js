@@ -1,14 +1,5 @@
 var RenderedView = {
-		ofertas: 	    /*'<ul>' + 
-                            '{{#ofertas}}' +
-                                '<li id="liOferta{{idoferta}}" onClick="App.verDetalleOferta(this.id)" class="accept">' +
-                                    '<button class="on-right" data-icon="menu"><abbr>{{precio}} &#x20ac;</abbr></button>' +
-						            '<strong>{{nombre}}</strong>' +
-                                    '<small>{{descripcion}}</small>' +
-						        '</li>' +
-                            '{{/ofertas}}' +
-                        '</ul>',*/
-                        '<li class="thumb big">' +
+		ofertas: 	    '<li class="thumb big">' +
 						'{{#ofertas}}' +
 						'	<div id="liOferta{{idoferta}}" onClick="App.verDetalleOferta(this.id)" style="width: 50%">' +
 						'{{#foto}}' +
