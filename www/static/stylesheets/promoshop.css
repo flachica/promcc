@@ -14,3 +14,7 @@ strong {
 small {
    white-space: inherit !important;
 }
+
+.welcome {
+    width: 100%;
+}

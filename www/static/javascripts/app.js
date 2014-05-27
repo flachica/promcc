@@ -30,6 +30,7 @@ Lungo.ready(function() {
     Lungo.Service.Settings.crossDomain = true;
     Lungo.Service.Settings.timeout = 10000;
     App.ccCercano();
+
     Lungo.dom('#main').on('load', function(event){
         $$('#verMenuCcCercanos').removeClass('hidden');
     });
@@ -44,7 +45,7 @@ var App = (function(lng, undefined) {
     geoposOptions = { timeout: 10000, enableHighAccuracy: true };
     
     //casa
-    serverDev = {urlList: 'http://192.168.0.103/promccweb/index.php/api/list'};
+    serverDev = {urlList: 'http://192.168.0.105/promccweb/index.php/api/list'};
     //crea    
     //serverDev = {urlList: 'http://10.13.16.94/promccweb/index.php/api/list'};
     serverProd = {urlList: 'http://app.hubservice.es/promoshop/promccweb/index.php/api/list'};
@@ -73,7 +74,8 @@ var App = (function(lng, undefined) {
 
     getOfertasCC = function(ccID, ccNombre) {
         getOfertas("", ccID, "", -1);
-        Lungo.Notification.html('<h1>Bienvenido/a</h1>Usted está viendo las ofertas del Centro Comercial ' + ccNombre, "Cerrar");
+        //Lungo.Notification.html('<h1>Bienvenido/a</h1>Usted está viendo las ofertas del Centro Comercial ' + ccNombre, "Cerrar");
+        Lungo.Notification.html('<img class="welcome" data-action="close" src="static/images/welcome/welcome.png"/>', "Cerrar");
     };
 
     getOfertasUltimaHora = function() {
@@ -142,6 +144,7 @@ var App = (function(lng, undefined) {
         App.currentPosition = {};
         App.currentPosition.lat = -1;
         App.currentPosition.lon = -1;
+        console.log(error);
         Lungo.Notification.confirm({
             icon: 'map-marker',
             title: 'Busque en la barra lateral',
