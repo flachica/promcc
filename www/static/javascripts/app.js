@@ -42,7 +42,7 @@ var App = (function(lng, undefined) {
     segundosCuentaAtras = 0;
     cuentaAtrasID = {};
 
-    geoposOptions = { timeout: 10000, enableHighAccuracy: true };
+    geoposOptions = {timeout:10000, enableHighAccuracy:false};
     
     //casa
     serverDev = {urlList: 'http://192.168.0.105/promccweb/index.php/api/list'};
@@ -132,6 +132,7 @@ var App = (function(lng, undefined) {
     };
 
     getCurrentPositionError = function (error) {
+        Console.log(error);
         App.geoposOptions.enableHighAccuracy = false;
         App.geoposOptions.timeout = 5000;
         navigator.geolocation.getCurrentPosition(App.getCurrentPositionSuccess, 
