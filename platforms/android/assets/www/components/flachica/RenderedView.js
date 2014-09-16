@@ -13,8 +13,6 @@ var RenderedView = {
 						'				<span class="on-right tachado">{{preciobase}} €</span>' +
 						'				{{/preciobase}}' +
 						'				<small>{{descripcion}}</small>' +
-                        '               <input type="hidden" class="counter" id="secForOf{{idoferta}}" value="{{segundosRestantes}}" />' +
-                        '               <strong class="on-center" id="cont{{idoferta}}">Hola mundo</strong>' +
 						'			</div>' +
 						'		</div>' +
 						'{{/foto}}' +

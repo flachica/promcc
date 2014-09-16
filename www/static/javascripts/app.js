@@ -40,7 +40,9 @@ var App = (function(lng, undefined) {
     map = {};
     currentPosition = {};
     segundosCuentaAtras = 0;
+    segundosPasadosDesdeVistaOfertas = 0;
     cuentaAtrasID = {};
+    cuentaAtrasGenID = {};
 
     geoposOptions = {timeout:10000, enableHighAccuracy:false};
     
@@ -211,31 +213,6 @@ var App = (function(lng, undefined) {
             Lungo.Service.post(App.serverInfo.urlList, params, pintaOfertas, "json"); 
     }
 
-    pintaOfertas = function(result) {
-        var containerID = '#container';
-        if (typeof result[0] === "undefined") {
-            Lungo.Notification.html('<h1>Lo siento</h1>No se encontraron datos', "Cerrar");
-        }else {
-            if (result[0].horas == '-1'){
-                Lungo.Router.section("ofertas");
-                containerID = '#container';
-            } 
-            if (result[0].horas == '1'){
-                Lungo.Router.section("unahora");
-                containerID = '#container1h';
-            }
-            if (result[0].horas == '2'){
-                Lungo.Router.section("doshoras");
-                containerID = '#container2h';
-            }
-            if (result[0].horas == '3'){
-                Lungo.Router.section("treshoras");
-                containerID = '#container3h';
-            }
-            RenderedView.renderProducts('ofertas', result, containerID);
-        }
-    }
-
     verOfertasTD = function (tiendaIDHandler) {
         var tiendaID = tiendaIDHandler.substring(10);
         $$('#verMenuCcCercanos').addClass('hidden');
@@ -325,6 +302,7 @@ var App = (function(lng, undefined) {
     }
 
     ccCercano = function () {
+        App.segundosPasadosDesdeVistaOfertas = 0;
         Lungo.Router.section('main');
         Lungo.Notification.show();
         navigator.geolocation.getCurrentPosition(App.getCurrentPositionSuccess, 
@@ -350,6 +328,16 @@ var App = (function(lng, undefined) {
         }
      };
 
+    cuentaAtrasGen = function () {
+        App.segundosPasadosDesdeVistaOfertas += 1;
+        console.log(App.segundosPasadosDesdeVistaOfertas);
+        $$('.counter').each(function(i, obj) {
+            var ofID = $$(obj).attr('id').substring(8);
+            var secForOf = parseInt($$(obj).val()) - App.segundosPasadosDesdeVistaOfertas;
+            $$("#cont" + ofID).html(toDDHHMMSS(secForOf));
+        });
+     };
+
     pintaDetalleOferta = function(result) {
         Lungo.Router.section("detalleoferta");
         App.segundosCuentaAtras = result[0].segundosRestantes;
@@ -357,6 +345,35 @@ var App = (function(lng, undefined) {
         App.cuentaAtrasID = setInterval(cuentaAtras,1000);
         RenderedView.renderTemplate('detalleOferta', result, '#detalleOferta', true);
     };
+
+    pintaOfertas = function(result) {
+        console.log(result);
+        App.cuentaAtrasGen();
+        App.cuentaAtrasGenID = setInterval(cuentaAtrasGen,1000);
+
+        var containerID = '#container';
+        if (typeof result[0] === "undefined") {
+            Lungo.Notification.html('<h1>Lo siento</h1>No se encontraron datos', "Cerrar");
+        }else {
+            if (result[0].horas == '-1'){
+                Lungo.Router.section("ofertas");
+                containerID = '#container';
+            } 
+            if (result[0].horas == '1'){
+                Lungo.Router.section("unahora");
+                containerID = '#container1h';
+            }
+            if (result[0].horas == '2'){
+                Lungo.Router.section("doshoras");
+                containerID = '#container2h';
+            }
+            if (result[0].horas == '3'){
+                Lungo.Router.section("treshoras");
+                containerID = '#container3h';
+            }
+            RenderedView.renderProducts('ofertas', result, containerID);
+        }
+    }
 
     canjearOferta = function (ofertaHandlerID) {
         var parOfertaID = ofertaHandlerID.substring(16);
@@ -443,6 +460,7 @@ var App = (function(lng, undefined) {
         resultadoErrorPosicion: resultadoErrorPosicion,
         ccCercano: ccCercano,
         cuentaAtras: cuentaAtras,
+        cuentaAtrasGen: cuentaAtrasGen,
         pintaDetalleOferta: pintaDetalleOferta,
         canjearOferta: canjearOferta,
         dameCodigoBarrasCanjeo: dameCodigoBarrasCanjeo,
